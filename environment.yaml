@@ -1,5 +1,4 @@
 channels:
   - conda-forge
 dependencies:
-  - sagemath=10.3
-  - jupyterlab
+  - sage
