@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gröbner Bases: SageMath Examples</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+    <link rel="stylesheet" href="https://sagecell.sagemath.org/static/sagecell_embed.css">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #1a1a2e;
+            --body: #3a3a4a;
+            --muted: #6b6b7b;
+            --border: #d4d2cc;
+            --bg: #faf9f6;
+            --surface: #ffffff;
+            --accent: #2e5a88;
+            --accent-light: #e8eff7;
+            --exercise-bg: #fdf6ec;
+            --exercise-border: #e6d5b8;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            color: var(--body);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 6rem;
+        }
+
+        header {
+            margin-bottom: 3.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 0.6rem;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h2 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.55rem;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .section p {
+            margin-bottom: 1rem;
+            color: var(--body);
+        }
+
+        .section p code {
+            font-size: 0.9em;
+            background: var(--accent-light);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        .cell-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-top: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .exercise {
+            background: var(--exercise-bg);
+            border: 1px solid var(--exercise-border);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .exercise strong {
+            color: var(--ink);
+        }
+
+        .sagecell .CodeMirror {
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .sagecell .sagecell_evalButton {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 6px 18px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .sagecell .sagecell_evalButton:hover {
+            background: #1e4468;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .page { padding: 2rem 1rem 4rem; }
+            header h1 { font-size: 1.7rem; }
+            .cell-wrapper { padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+
+        <header>
+            <h1>Gröbner Bases: SageMath Examples</h1>
+            <p>Companion worksheet to the course <em>Gröbner bases and convex polytopes: between algebra, geometry, and combinatorics</em> by Sara Veneziale. Edit the code and click <strong>Run</strong> to experiment.</p>
+        </header>
+
+        <!-- 1. Division algorithm -->
+
+        <div class="section">
+            <h2>1. Division algorithm</h2>
+
+            <p>In one variable, the division algorithm is unique: given $f, g \in k[x]$, there exist unique $q, r$ with $f = qg + r$ and $\deg(r) &lt; \deg(g)$.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+# This is how we define a polynomial ring in SageMath
+# (with a single variable x over the rational numbers QQ
+#  -- you can also use RR, but then the numbers look bad)
+R.<x> = QQ[]
+
+# Define two polynomials, f and g
+f = x^5 + 2*x^3 - x + 7
+g = x^2 + 1
+
+# Run the division algorithm
+q, r = f.quo_rem(g)
+print(f"q = {q}, r = {r}")
+print(f"Check: f == q*g + r? {f == q*g + r}")
+print(f"deg(r) = {r.degree()} < deg(g) = {g.degree()}? {r.degree() < g.degree()}")
+</script></div>
+            </div>
+
+            <p>Every ideal in $k[x]$ is principal:</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x> = QQ[]
+
+# Let's take an ideal -- we know this will be principal,
+# but let's see how Sage finds the generator
+I = R.ideal(x^3 - x, x^2 - 1)
+
+print(f"Generator: {I.gen()}")
+print(f"So I is principal: I = ({I.gen()})")
+</script></div>
+            </div>
+        </div>
+
+        <!-- 2. Monomial orders -->
+
+        <div class="section">
+            <h2>2. Monomial orders</h2>
+
+            <p>In multiple variables, we need to choose a monomial order. Different orders give different leading terms. Let's see the three standard orders on the same polynomial.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+# The same polynomial under three different monomial orders
+for order_name in ['lex', 'deglex', 'degrevlex']:
+    R = PolynomialRing(QQ, 'x,y,z', order=order_name)
+    x, y, z = R.gens()
+    f = x^2*y + x*y^2*z + z^4
+    print(f"Order: {order_name:10s}  f = {f}  LT(f) = {f.lt()}")
+</script></div>
+            </div>
+
+            <div class="exercise">
+                <strong>Exercise:</strong> Find $f$ such that $\mathrm{LT}(f)$ under lex is $x^3$ but $\mathrm{LT}(f)$ under degrevlex is $y^2 z^2$.
+            </div>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+for order_name in ['lex', 'degrevlex']:
+    R = PolynomialRing(QQ, 'x,y,z', order=order_name)
+    x, y, z = R.gens()
+    f = # TODO
+    print(f"LT(f) = {f.lt()}")
+</script></div>
+            </div>
+        </div>
+
+        <!-- 3. Multivariate division algorithm -->
+
+        <div class="section">
+            <h2>3. Multivariate division algorithm</h2>
+
+            <p>The multivariate division algorithm produces $f = h_1 f_1 + \cdots + h_s f_s + r$, but the remainder $r$ depends on the order in which we divide. Here is the classic example showing non-uniqueness:</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y,z> = PolynomialRing(QQ, order='lex') # The order is x>y>z
+
+f = y^2 - x*z
+f1 = y - x^2
+f2 = z - x^3
+
+r1 = f.reduce([f1, f2])
+print(f"Dividing by [{f1}, {f2}]: remainder = {r1}")
+</script></div>
+            </div>
+
+            <div class="exercise">
+                <strong>Exercise:</strong> Try changing the order above and see if you can get zero remainder.
+            </div>
+
+            <p>Sage's built-in <code>reduce</code> divides by all polynomials simultaneously, so the list order doesn't matter. To see the order-dependence, we need the textbook algorithm where the <code>break</code> restarts from the top of the divisor list:</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y> = PolynomialRing(QQ, order='lex')
+
+def multivariate_division(f, divisors):
+    """Textbook multivariate division algorithm (CLO Algorithm 3)."""
+    quotients = [R(0)] * len(divisors)
+    remainder = R(0)
+    p = f
+    while p != 0:
+        divided = False
+        for i, fi in enumerate(divisors):
+            if fi.lt().divides(p.lt()):
+                quotients[i] += p.lt() // fi.lt()
+                p -= (p.lt() // fi.lt()) * fi
+                divided = True
+                break  # restart the loop — this is where ordering matters
+        if not divided:
+            remainder += p.lt()
+            p -= p.lt()
+    return quotients, remainder
+
+f = x^2*y + x*y^2 + y^2
+f1 = x*y - 1
+f2 = y^2 - 1
+
+# Swap the division order
+q1, r1 = multivariate_division(f, [f1, f2])
+q2, r2 = multivariate_division(f, [f2, f1])
+
+print(f"f = {f}")
+print(f"f1 = {f1}, f2 = {f2}")
+print()
+print(f"Dividing by [f1, f2]: remainder = {r1}")
+print(f"Dividing by [f2, f1]: remainder = {r2}")
+</script></div>
+            </div>
+        </div>
+
+        <!-- 4. Initial ideals -->
+
+        <div class="section">
+            <h2>4. Initial ideals</h2>
+
+            <p>Let's start by computing the leading terms with respect to some order.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y,z> = PolynomialRing(QQ, order='degrevlex') # The order is x>y>z
+
+f1 = x - y^2
+f2 = y^3 - 1
+
+I = R.ideal([f1, f2])
+
+# Leading terms of the generators
+print("Leading terms of the generators:", [f.lt() for f in [f1, f2]])
+
+# Naive attempt: leading terms of the generators
+naive_lt = R.ideal([f.lt() for f in [f1, f2]])
+print("Naive <lt(f1), lt(f2)>:", [f.lt() for f in [f1, f2]])
+
+# Actual initial ideal: need the Gröbner basis (which we have not done yet!)
+G = I.groebner_basis()
+initial_ideal = R.ideal([g.lt() for g in G])
+
+print("\nActual in_<(I):", [g.lt() for g in G])
+
+# Show they're different
+print("Are they the same ideal?")
+print("Naive is contained in initial ideal:", naive_lt <= initial_ideal)
+print("Initial ideal is contained in naive:", initial_ideal <= naive_lt)
+</script></div>
+            </div>
+
+            <div class="exercise">
+                <strong>Exercise:</strong> Is this true with respect to all monomial orderings?
+            </div>
+        </div>
+
+        <!-- 5. Gröbner bases -->
+
+        <div class="section">
+            <h2>5. Gröbner bases</h2>
+
+            <p>Let's compute the Gröbner basis of a simple ideal and verify that the remainder is now unique regardless of division order.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y> = PolynomialRing(QQ, order='lex')
+
+I = R.ideal(x^2 + y - 1, x + y^2 - 1)
+G = I.groebner_basis()
+print("Ideal I = (x^2 + y - 1, x + y^2 - 1)")
+print(f"Gröbner basis (lex): {G}")
+print(f"Number of elements: {len(G)}")
+
+# With a Gröbner basis, the remainder is unique
+f = x^3 + y^3
+
+def multivariate_division(f, divisors):
+    """Textbook multivariate division algorithm (CLO Algorithm 3)."""
+    quotients = [R(0)] * len(divisors)
+    remainder = R(0)
+    p = f
+    while p != 0:
+        divided = False
+        for i, fi in enumerate(divisors):
+            if fi.lt().divides(p.lt()):
+                quotients[i] += p.lt() // fi.lt()
+                p -= (p.lt() // fi.lt()) * fi
+                divided = True
+                break  # restart the loop — this is where ordering matters
+        if not divided:
+            remainder += p.lt()
+            p -= p.lt()
+    return quotients, remainder
+
+# Perform the division in both orders and compare the remainders
+q1, r1 = multivariate_division(f, list(G))
+q2, r2 = multivariate_division(f, list(reversed(G)))
+print(f"f = {f}")
+print(f"Remainder (original order):  {r1}")
+print(f"Remainder (reversed order):  {r2}")
+</script></div>
+            </div>
+
+            <p>One of the main uses of Gröbner bases: testing whether a polynomial belongs to an ideal.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y> = PolynomialRing(QQ, order='lex')
+I = R.ideal(x^2 - y, x^3 - x)
+
+f = x^4 - x^2
+g = x^2 + y + 1
+
+print(f"I = ({x^2 - y}, {x^3 - x})")
+print(f"Gröbner basis: {I.groebner_basis()}")
+print()
+print(f"Is f = {f} in I?  {f in I}  (remainder: {f.reduce(I.groebner_basis())})")
+print(f"Is g = {g} in I?  {g in I}  (remainder: {g.reduce(I.groebner_basis())})")
+</script></div>
+            </div>
+        </div>
+
+        <!-- 6. Different orderings give different Gröbner bases -->
+
+        <div class="section">
+            <h2>6. Different orderings give different Gröbner bases</h2>
+
+            <p>This is a key point: the <em>same</em> ideal has different Gröbner bases under different monomial orders. Let's see this with the Katsura-4 ideal.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+orders = ['lex', 'deglex', 'degrevlex']
+
+for ord_name in orders:
+    R = PolynomialRing(QQ, 'a,b,c,d,e', order=ord_name)
+    a, b, c, d, e = R.gens()
+
+    # Define an ideal
+    I = R.ideal([
+        a + 2*b + 2*c + 2*d + 2*e - 1,
+        a^2 + 2*b^2 + 2*c^2 + 2*d^2 + 2*e^2 - a,
+        2*a*b + 2*b*c + 2*c*d + 2*d*e - b,
+        2*a*c + b^2 + 2*b*d + 2*c*e - c,
+        2*a*d + 2*b*c + 2*b*e - d
+    ])
+
+    G = I.groebner_basis()
+    total_terms = sum(len(g.monomials()) for g in G)
+    max_deg = max(g.degree() for g in G)
+    print(f"Order: {ord_name}")
+    print(f"  Basis size: {len(G)}, total terms: {total_terms}, max degree: {max_deg}")
+    print()
+</script></div>
+            </div>
+        </div>
+
+        <!-- 7. S-polynomials and Buchberger's algorithm -->
+
+        <div class="section">
+            <h2>7. S-polynomials and Buchberger's algorithm</h2>
+
+            <p>Let's implement Buchberger's algorithm naively, with full logging so we can follow each step.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x,y> = PolynomialRing(QQ, order='lex')
+
+def s_polynomial(f, g):
+    """Compute the S-polynomial of f and g."""
+    lcm_fg = lcm(f.lm(), g.lm())
+    return (lcm_fg // f.lt()) * f - (lcm_fg // g.lt()) * g
+
+def reduce_poly(f, G):
+    """Reduce f modulo G using the textbook division algorithm."""
+    r = R(0)
+    p = f
+    while p != 0:
+        divided = False
+        for g in G:
+            if g.lt().divides(p.lt()):
+                p -= (p.lt() // g.lt()) * g
+                divided = True
+                break
+        if not divided:
+            r += p.lt()
+            p -= p.lt()
+    return r
+
+def buchberger(F):
+    """Buchberger's algorithm with full logging."""
+    G = list(F)
+    print("Starting generators:")
+    for i, g in enumerate(G):
+        print(f"  g{i+1} = {g}")
+    print()
+
+    step = 0
+    pairs = [(i, j) for i in range(len(G)) for j in range(i+1, len(G))]
+
+    while pairs:
+        i, j = pairs.pop(0)
+        step += 1
+
+        S = s_polynomial(G[i], G[j])
+        print(f"Step {step}: S(g{i+1}, g{j+1})")
+        print(f"  lcm(lm(g{i+1}), lm(g{j+1})) = {lcm(G[i].lm(), G[j].lm())}")
+        print(f"  S-poly = {S}")
+
+        r = reduce_poly(S, G)
+        print(f"  Remainder = {r}")
+
+        if r != 0:
+            G.append(r)
+            new_index = len(G) - 1
+            print(f" New basis element g{new_index+1} = {r}")
+            # Add new pairs
+            for k in range(new_index):
+                pairs.append((k, new_index))
+        else:
+            print(f" Reduces to 0, discard")
+        print()
+
+    print("=" * 40)
+    print(f"Gröbner basis ({len(G)} elements):")
+    for i, g in enumerate(G):
+        print(f"  g{i+1} = {g}")
+    return G
+
+# Example: a small ideal where something interesting happens
+f1 = x^3 - 2*x*y
+f2 = x^2*y - 2*y^2 + x
+
+G = buchberger([f1, f2])
+
+# Verify against Sage's built-in
+print()
+I = R.ideal([f1, f2])
+print(f"Sage's Gröbner basis: {I.groebner_basis()}")
+</script></div>
+            </div>
+        </div>
+
+        <footer>
+            Powered by <a href="https://sagecell.sagemath.org/" target="_blank" rel="noopener">SageMathCell</a>.
+            Code cells run on a public server &mdash; nothing is saved between sessions.
+        </footer>
+
+    </div>
+
+    <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+    <script>
+        sagecell.makeSagecell({
+            inputLocation: '.sage-cell',
+            evalButtonText: 'Run'
+        });
+    </script>
+</body>
+</html>
