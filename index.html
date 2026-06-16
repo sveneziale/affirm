@@ -177,7 +177,7 @@
 
         <header>
             <h1>Gröbner Bases: SageMath Examples</h1>
-            <p>Companion worksheet to the course <em>Gröbner bases and convex polytopes: between algebra, geometry, and combinatorics</em> by Sara Veneziale. Edit the code and click <strong>Run</strong> to experiment.</p>
+            <p>Companion worksheet to the course <em>Gröbner bases and convex polytopes: between algebra, geometry, and combinatorics</em> by Sara Veneziale. Edit the code and click <strong>Run</strong> to experiment. Note that variables are not shared between cells.</p>
         </header>
 
         <!-- 1. Division algorithm -->
@@ -227,7 +227,7 @@ print(f"So I is principal: I = ({I.gen()})")
         <div class="section">
             <h2>2. Monomial orders</h2>
 
-            <p>In multiple variables, we need to choose a monomial order. Different orders give different leading terms. Let's see the three standard orders on the same polynomial.</p>
+            <p>In multiple variables, we need to choose a monomial order. Different orders give different leading terms. Let's see the three standard orders on the same polynomial. Try to find a polynomial that has a different leading order for each and one that has the same leading order for all.</p>
 
             <div class="cell-wrapper">
                 <div class="sage-cell"><script type="text/x-sage">
@@ -250,7 +250,7 @@ for order_name in ['lex', 'degrevlex']:
     R = PolynomialRing(QQ, 'x,y,z', order=order_name)
     x, y, z = R.gens()
     f = # TODO
-    print(f"LT(f) = {f.lt()}")
+    print(f"Order: {order_name:10s}  LT(f) = {f.lt()}")
 </script></div>
             </div>
         </div>
@@ -260,7 +260,7 @@ for order_name in ['lex', 'degrevlex']:
         <div class="section">
             <h2>3. Multivariate division algorithm</h2>
 
-            <p>The multivariate division algorithm produces $f = h_1 f_1 + \cdots + h_s f_s + r$, but the remainder $r$ depends on the order in which we divide. Here is the classic example showing non-uniqueness:</p>
+            <p>The multivariate division algorithm produces $f = h_1 f_1 + \cdots + h_s f_s + r$, but the remainder $r$ depends on the order in which we divide.</p>
 
             <div class="cell-wrapper">
                 <div class="sage-cell"><script type="text/x-sage">
@@ -314,8 +314,8 @@ q2, r2 = multivariate_division(f, [f2, f1])
 print(f"f = {f}")
 print(f"f1 = {f1}, f2 = {f2}")
 print()
-print(f"Dividing by [f1, f2]: remainder = {r1}")
-print(f"Dividing by [f2, f1]: remainder = {r2}")
+print(f"Dividing by [f1, f2]: quotients = {q1}, remainder = {r1}")
+print(f"Dividing by [f2, f1]: quotients = {q2}, remainder = {r2}")
 </script></div>
             </div>
         </div>
@@ -403,7 +403,9 @@ def multivariate_division(f, divisors):
 q1, r1 = multivariate_division(f, list(G))
 q2, r2 = multivariate_division(f, list(reversed(G)))
 print(f"f = {f}")
+print(f"Quotient (original order):  {q1}")
 print(f"Remainder (original order):  {r1}")
+print(f"Quotient (reversed order):  {q2}")
 print(f"Remainder (reversed order):  {r2}")
 </script></div>
             </div>
@@ -432,7 +434,7 @@ print(f"Is g = {g} in I?  {g in I}  (remainder: {g.reduce(I.groebner_basis())})"
         <div class="section">
             <h2>6. Different orderings give different Gröbner bases</h2>
 
-            <p>This is a key point: the <em>same</em> ideal has different Gröbner bases under different monomial orders. Let's see this with the Katsura-4 ideal.</p>
+            <p>This is a key point: the <em>same</em> ideal has different Gröbner bases under different monomial orders. Let's see this with an example.</p>
 
             <div class="cell-wrapper">
                 <div class="sage-cell"><script type="text/x-sage">
