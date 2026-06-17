@@ -549,6 +549,109 @@ print(f"Sage's Gröbner basis: {I.groebner_basis()}")
             </div>
         </div>
 
+        <!-- 8. Newton polytopes in 2D -->
+
+        <div class="section">
+            <h2>8. Newton polytopes in 2D</h2>
+
+            <p>Given a polynomial $f \in k[x_1, \dots, x_n]$, its <strong>Newton polytope</strong> $\operatorname{Newt}(f)$ is the convex hull of the exponent vectors of the monomials appearing in $f$. The key fact is that only monomials corresponding to <em>vertices</em> of $\operatorname{Newt}(f)$ can ever be the leading term under some term order, since choosing a term order amounts to maximising a linear functional, and the maximum of a linear functional on a polytope is always attained at a vertex.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+R.<x, y> = PolynomialRing(QQ)
+f = x^3 + 2*x^2*y + x*y^2 + y^3 + x + 1
+
+# Extract exponent vectors
+exponents_2d = [vector(e) for e in f.exponents()]
+print("f =", f)
+print("Exponent vectors:", exponents_2d)
+
+# Compute Newton polytope
+Newt_f = Polyhedron(vertices=exponents_2d)
+print("Newton polytope vertices:", Newt_f.vertices_list())
+
+# Plot
+p2d = Newt_f.plot(alpha=0.3, color='steelblue')
+for pt in Newt_f.integral_points():
+    a, b = pt
+    mono_str = ""
+    if a > 0:
+        mono_str += f"x^{a}" if a > 1 else "x"
+    if b > 0:
+        mono_str += f"y^{b}" if b > 1 else "y"
+    if a == 0 and b == 0:
+        mono_str = "1"
+    p2d += text(mono_str, (a + 0.15, b + 0.15), color='black')
+show(p2d, figsize=6)
+</script></div>
+            </div>
+
+        </div>
+
+        <!-- 9. Newton polytopes in 3D -->
+
+        <div class="section">
+            <h2>9. Newton polytopes in 3D</h2>
+
+            <p>In three variables, Newton polytopes become genuine 3-dimensional objects. The $f$-vector $(V, E, F)$ counts vertices, edges, and facets, and satisfies the Euler relation $V - E + F = 2$.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+S.<x, y, z> = PolynomialRing(QQ)
+g = x^2*y*z + x*y^2 + y*z^2 + x^2 + z^3 + 1
+
+exponents_3d = [vector(e) for e in g.exponents()]
+print("g =", g)
+print("Exponent vectors:", exponents_3d)
+
+Newt_g = Polyhedron(vertices=exponents_3d)
+print("Newton polytope vertices:", Newt_g.vertices_list())
+
+# 3D interactive plot
+p3d = Newt_g.plot(alpha=0.3, color='steelblue')
+p3d += Newt_g.plot(point={'color': 'red', 'size': 20})
+show(p3d, figsize=8)
+</script></div>
+            </div>
+
+            <div class="exercise">
+                <strong>Exercise:</strong> Try adding a term to $g$ (e.g. $+ xyz$) and see how the polytope changes — does the new exponent vector become a vertex, or does it land inside the existing polytope?
+            </div>
+        </div>
+
+        <!-- 10. Minkowski sums and Newt(fg) = Newt(f) + Newt(g) -->
+
+        <div class="section">
+            <h2>10. Minkowski sums and $\operatorname{Newt}(fg) = \operatorname{Newt}(f) + \operatorname{Newt}(g)$</h2>
+
+            <p>The <strong>Minkowski sum</strong> of two polytopes $P$ and $Q$ is $P + Q = \{p + q \mid p \in P, q \in Q\}$. A fundamental fact is that $\operatorname{Newt}(f \cdot g) = \operatorname{Newt}(f) + \operatorname{Newt}(g)$: the Newton polytope of a product is the Minkowski sum of the Newton polytopes. Let's verify this for $h = x + y + z + 1$, where $\operatorname{Newt}(h)$ is a tetrahedron and $\operatorname{Newt}(h^2)$ should be the tetrahedron scaled by 2.</p>
+
+            <div class="cell-wrapper">
+                <div class="sage-cell"><script type="text/x-sage">
+S.<x, y, z> = PolynomialRing(QQ)
+h = x + y + z + 1
+h2 = h * h
+
+Newt_h = Polyhedron(vertices=[vector(e) for e in h.exponents()])
+Newt_h2 = Polyhedron(vertices=[vector(e) for e in h2.exponents()])
+Mink_sum = Newt_h + Newt_h
+
+print(f"Newt(h)   vertices: {sorted(Newt_h.vertices_list())}")
+print(f"Newt(h^2) vertices: {sorted(Newt_h2.vertices_list())}")
+print(f"Newt(h)+Newt(h)   : {sorted(Mink_sum.vertices_list())}")
+print(f"Equal? {Newt_h2 == Mink_sum}")
+
+# Show both: Newt(h) in orange, Newt(h)+Newt(h) in blue
+p_h = Newt_h.plot(alpha=0.3, color='orange')
+p_h += Newt_h.plot(point={'color': 'red', 'size': 20})
+p_sum = Mink_sum.plot(alpha=0.3, color='steelblue')
+p_sum += Mink_sum.plot(point={'color': 'red', 'size': 20})
+show(p_h + p_sum, figsize=8)
+</script></div>
+            </div>
+
+        </div>
+
         <footer>
             Powered by <a href="https://sagecell.sagemath.org/" target="_blank" rel="noopener">SageMathCell</a>.
             Code cells run on a public server &mdash; nothing is saved between sessions.
